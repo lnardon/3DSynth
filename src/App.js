@@ -8,15 +8,32 @@ function App() {
     synth.triggerAttackRelease(note, "8n");
   }
 
+  const keyboardInputToNote = {
+    KeyA: "C",
+    KeyW: "C#",
+    KeyS: "D",
+    KeyE: "D#",
+    KeyD: "E",
+    KeyF: "F",
+    KeyT: "F#",
+    KeyG: "G",
+    KeyY: "G#",
+    KeyH: "A",
+    KeyU: "A#",
+    KeyJ: "B",
+  };
+
+  document.addEventListener("keypress", (e) => {
+    if (keyboardInputToNote[e.code]) {
+      handleTone(`${keyboardInputToNote[e.code]}2`);
+    }
+  });
+
   return (
     <div className="App">
       <h1>3D Synth</h1>
-      <h2>Coming Soon</h2>
-      <button onClick={() => handleTone("C3")}>Play Tone C3</button>
-      <button onClick={() => handleTone("D3")}>Play Tone D3</button>
-      <button onClick={() => handleTone("E3")}>Play Tone E3</button>
-      <button onClick={() => handleTone("F3")}>Play Tone F3</button>
-      <button onClick={() => handleTone("G3")}>Play Tone G3</button>
+      <h2>3D Coming Soon</h2>
+      <h3>Use the keys from A to J to play the synth</h3>
     </div>
   );
 }
