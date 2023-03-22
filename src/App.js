@@ -1,5 +1,7 @@
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
+import { useLoader } from "@react-three/fiber";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import * as Tone from "tone";
 
 import "./App.css";
@@ -35,6 +37,11 @@ function App() {
     KeyJ: "B",
   };
 
+  function Synth() {
+    const gltf = useLoader(GLTFLoader, "/synth.gltf");
+    return <primitive object={gltf.scene} />;
+  }
+
   document.addEventListener("keypress", (e) => {
     if (keyboardInputToNote[e.code]) {
       handleTone(`${keyboardInputToNote[e.code]}2`);
@@ -52,10 +59,7 @@ function App() {
       >
         <ambientLight />
         <pointLight position={[10, 10, 10]} />
-        <mesh>
-          <boxGeometry args={[1, 1, 1, 1]} />
-          <meshStandardMaterial />
-        </mesh>
+        {Synth()}
         <OrbitControls />
       </Canvas>
     </div>
