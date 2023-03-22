@@ -1,6 +1,10 @@
 # [3D Synth](https://d-synth.web.app/)
 
-An interactive synth website experience with Three.js and Tone.js.
+An interactive synth website experience with Three.js and Tone.js. Just click on the 3D synth keyboard and start playing.
+
+<p align="center">
+  <img src="./demo.PNG">
+</p>
 
 ### What was used
 
@@ -9,4 +13,3 @@ An interactive synth website experience with Three.js and Tone.js.
 - Tone.js
 - Three.js
 - Blender
-- CSS
