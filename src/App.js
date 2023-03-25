@@ -5,6 +5,7 @@ import * as Tone from "tone";
 import Scene from "./components/Scene";
 import Menu from "./components/Menu";
 import "./App.css";
+import { connect } from "tone";
 
 function App() {
   window.onload = () => {
@@ -14,11 +15,23 @@ function App() {
   };
   function handleTone(note) {
     const vol = new Tone.Volume(-3).toDestination();
-    const synth = new Tone.Synth().connect(vol).toDestination();
     const targetNote =
       note.length === 4
         ? note.charAt(0) + note.charAt(note.length - 1)
         : note.charAt(0) + note.charAt(1) + note.charAt(note.length - 1);
+    const synth = new Tone.Synth({
+      oscillator: {
+        type: "triangle",
+      },
+      envelope: {
+        attack: 0.03,
+        decay: 0.7,
+        sustain: 0.1,
+        release: 0.15,
+      },
+    })
+      .connect(vol)
+      .toDestination();
     synth.triggerAttackRelease(targetNote, "4n");
   }
 
@@ -39,7 +52,7 @@ function App() {
 
   // document.addEventListener("keypress", (e) => {
   //   if (keyboardInputToNote[e.code]) {
-  //     handleTone(`${keyboardInputToNote[e.code]}`);
+  //     handleTone(`${keyboardInputToNote[e.code]}3`);
   //   }
   // });
 

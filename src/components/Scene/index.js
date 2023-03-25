@@ -1,8 +1,14 @@
+import { useState } from "react";
 import { useThree } from "@react-three/fiber";
 import { useLoader } from "@react-three/fiber";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 
 function Scene({ handleKeyboardKeyPress }) {
+  const [waveform, setWaveform] = useState("sine");
+  const [attack, setAttack] = useState(0.03);
+  const [decay, setDecay] = useState(0.15);
+  const [sustain, setSustain] = useState(0.1);
+  const [release, setRelease] = useState(0.5);
   const { raycaster } = useThree();
   const gltf = useLoader(GLTFLoader, "/synth.gltf");
 
