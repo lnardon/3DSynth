@@ -1,38 +1,74 @@
+import { useState, useEffect } from "react";
 import { Canvas } from "@react-three/fiber";
-// import { OrbitControls } from "@react-three/drei";
 import * as Tone from "tone";
 
 import Scene from "./components/Scene";
 import Menu from "./components/Menu";
 import "./App.css";
-import { connect } from "tone";
 
 function App() {
-  window.onload = () => {
-    alert(
-      "Click on the 3D synth keys to play. This is still under active development and will change in the future."
-    );
-  };
+  const [synth, setSynth] = useState(null);
+  // const [oscillatorConfig, setOscillatorConfig] = useState({});
+  // const [volume, setVolume] = useState(new Tone.Volume(-3).toDestination());
+  const [midiAccess, setMidiAccess] = useState(null);
+
   function handleTone(note) {
-    const vol = new Tone.Volume(-3).toDestination();
     const targetNote =
       note.length === 4
-        ? note.charAt(0) + note.charAt(note.length - 1)
-        : note.charAt(0) + note.charAt(1) + note.charAt(note.length - 1);
-    const synth = new Tone.Synth({
-      oscillator: {
-        type: "triangle",
-      },
-      envelope: {
-        attack: 0.03,
-        decay: 0.7,
-        sustain: 0.1,
-        release: 0.15,
-      },
-    })
-      .connect(vol)
-      .toDestination();
-    synth.triggerAttackRelease(targetNote, "4n");
+        ? note.charAt(0) + (parseInt(note.charAt(note.length - 1)) + 1)
+        : note.charAt(0) +
+          note.charAt(1) +
+          (parseInt(note.charAt(note.length - 1)) + 1);
+    synth.triggerAttackRelease(targetNote, "8n");
+  }
+
+  useEffect(() => {
+    const filter = new Tone.Filter(150, "highpass", -24).toDestination();
+    filter.frequency.rampTo(20000, 10);
+    setSynth(
+      new Tone.Synth({
+        oscillator: {
+          type: "sine",
+        },
+        envelope: {
+          attack: 0.05,
+          decay: 0.3,
+          sustain: 0.2,
+          release: 0.1,
+        },
+      })
+        .connect(new Tone.Volume(-3).toDestination())
+        .connect(filter)
+        .toDestination()
+    );
+
+    handleMidi();
+    // eslint-disable-next-line
+  }, []);
+
+  function onMIDIMessage(event) {
+    console.log("MIDI", midiAccess, event);
+    let str = `MIDI message received at timestamp ${event.timeStamp}[${event.data.length} bytes]: `;
+    for (const character of event.data) {
+      str += `0x${character.toString(16)} `;
+    }
+    console.log(str);
+  }
+
+  function handleMidi() {
+    function onMIDISuccess(midiAccess) {
+      console.log("MIDI ready!", midiAccess);
+      setMidiAccess(midiAccess);
+      midiAccess.inputs.forEach((entry) => {
+        entry.onmidimessage = onMIDIMessage;
+      });
+    }
+
+    function onMIDIFailure(msg) {
+      console.error(`Failed to get MIDI access - ${msg}`);
+    }
+
+    navigator.requestMIDIAccess().then(onMIDISuccess, onMIDIFailure);
   }
 
   // const keyboardInputToNote = {
@@ -65,7 +101,6 @@ function App() {
         <ambientLight />
         <pointLight position={[0, 20, 3]} />
         <Scene handleKeyboardKeyPress={handleTone} />
-        {/* <OrbitControls /> */}
       </Canvas>
       <Menu />
     </div>
