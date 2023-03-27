@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Canvas } from "@react-three/fiber";
 import * as Tone from "tone";
 
@@ -7,52 +7,77 @@ import Menu from "./components/Menu";
 import "./App.css";
 
 function App() {
-  const [synth, setSynth] = useState(null);
+  const filter = new Tone.Filter(1000, "lowpass", -48);
+  const synths = useMemo(() => [
+    new Tone.Synth({
+      oscillator: {
+        type: "sine",
+      },
+      envelope: {
+        attack: 0.05,
+        decay: 0.3,
+        sustain: 0.2,
+        release: 0.1,
+      },
+      volume: -3,
+    })
+      .connect(new Tone.Volume(-3).toDestination())
+      .connect(filter)
+      .toDestination(),
+    new Tone.Synth({
+      oscillator: {
+        type: "fatsine",
+      },
+      detune: 800,
+      envelope: {
+        attack: 0.03,
+        decay: 0.05,
+        sustain: 0.01,
+        release: 0.01,
+      },
+      volume: -1,
+    })
+      .connect(filter)
+      .toDestination(),
+    new Tone.Synth({
+      oscillator: {
+        type: "fatsquare",
+      },
+      detune: 1200,
+      envelope: {
+        attack: 0,
+        decay: 0.1,
+        sustain: 0.05,
+        release: 0.1,
+      },
+      volume: -21,
+    })
+      .connect(filter)
+      .toDestination(),
+  ]);
   // const [oscillatorConfig, setOscillatorConfig] = useState({});
   // const [volume, setVolume] = useState(new Tone.Volume(-3).toDestination());
   const [midiAccess, setMidiAccess] = useState(null);
 
-  function handleTone(note) {
-    const targetNote =
-      note.length === 4
-        ? note.charAt(0) + (parseInt(note.charAt(note.length - 1)) + 1)
-        : note.charAt(0) +
-          note.charAt(1) +
-          (parseInt(note.charAt(note.length - 1)) + 1);
-    synth.triggerAttackRelease(targetNote, "8n");
-  }
-
   useEffect(() => {
-    const filter = new Tone.Filter(150, "highpass", -24).toDestination();
-    filter.frequency.rampTo(20000, 10);
-    setSynth(
-      new Tone.Synth({
-        oscillator: {
-          type: "sine",
-        },
-        envelope: {
-          attack: 0.05,
-          decay: 0.3,
-          sustain: 0.2,
-          release: 0.1,
-        },
-      })
-        .connect(new Tone.Volume(-3).toDestination())
-        .connect(filter)
-        .toDestination()
-    );
-
     handleMidi();
     // eslint-disable-next-line
   }, []);
 
-  function onMIDIMessage(event) {
-    console.log("MIDI", midiAccess, event);
-    let str = `MIDI message received at timestamp ${event.timeStamp}[${event.data.length} bytes]: `;
-    for (const character of event.data) {
-      str += `0x${character.toString(16)} `;
+  function onMIDIMessage(message) {
+    console.log("MIDI", midiAccess, message);
+    var command = message.data[0];
+    var note = message.data[1];
+
+    switch (command) {
+      case 144: // noteOn
+        handleTone(note);
+        break;
+      case 128: // noteOff
+        // handleTone(note);
+        break;
+      // we could easily expand this switch statement to cover other types of commands such as controllers or sysex
     }
-    console.log(str);
   }
 
   function handleMidi() {
@@ -70,6 +95,43 @@ function App() {
 
     navigator.requestMIDIAccess().then(onMIDISuccess, onMIDIFailure);
   }
+
+  function handleTone(note) {
+    if (typeof note === "string") {
+      const targetNote =
+        note.length === 4
+          ? note.charAt(0) + (parseInt(note.charAt(note.length - 1)) + 1)
+          : note.charAt(0) +
+            note.charAt(1) +
+            (parseInt(note.charAt(note.length - 1)) + 1);
+      synths.forEach((synth) => {
+        synth.triggerAttackRelease(targetNote, "8n");
+      });
+    }
+    if (typeof note === "number") {
+      const targetNote =
+        midiToNote[Math.floor(note % 12)] + Math.floor(note / 12);
+      console.log(synths, targetNote);
+      synths.forEach((synth) => {
+        synth.triggerAttackRelease(targetNote, "8n");
+      });
+    }
+  }
+
+  const midiToNote = {
+    0: "C",
+    1: "C#",
+    2: "D",
+    3: "D#",
+    4: "E",
+    5: "F",
+    6: "F#",
+    7: "G",
+    8: "G#",
+    9: "A",
+    10: "A#",
+    11: "B",
+  };
 
   // const keyboardInputToNote = {
   //   KeyA: "C",
