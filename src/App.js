@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { Canvas } from "@react-three/fiber";
 import * as Tone from "tone";
 
@@ -7,31 +7,30 @@ import Menu from "./components/Menu";
 import "./App.css";
 
 function App() {
+  const [lastNoteTime, setLastNoteTime] = useState(0);
   const synths = [];
   const synth = new Tone.PolySynth(Tone.Synth, {
     oscillator: {
       type: "custom",
-      partials: [1, 0.4, 1], // Mixing 3 waveforms: sine, triangle, and square
+      // detune: 50,
+      partials: [1, 0.2, 0.5], // Mixing 3 waveforms: sine, triangle, and square
     },
     envelope: {
-      attack: 0.01,
+      attack: 0,
       decay: 0.3,
       sustain: 0.2,
-      release: 1,
+      release: 0.4,
     },
     filterEnvelope: {
-      attack: 0.01,
+      attack: 0.1,
       decay: 0.1,
-      sustain: 0.5,
-      release: 1,
-      baseFrequency: 200,
-      octaves: 2,
-      exponent: 2,
+      sustain: 0.6,
+      release: 0.65,
+      baseFrequency: 400,
+      octaves: 1,
+      exponent: 1,
     },
   }).toDestination();
-
-  const [midiAccess, setMidiAccess] = useState(null);
-  const [lastNoteTime, setLastNoteTime] = useState(0);
 
   useEffect(() => {
     handleMidi();
@@ -39,28 +38,27 @@ function App() {
   }, []);
 
   function onMIDIMessage(message) {
-    var command = message.data[0];
-    var note = message.data[1];
+    const command = message.data[0];
+    const note = message.data[1];
 
     switch (command) {
       case 144: // noteOn
         const targetNote =
           midiToNote[Math.floor(note % 12)] + Math.floor(note / 12);
-        const startTime = Math.max(Tone.now(), lastNoteTime + 0.1);
+        const startTime = Math.max(Tone.now(), lastNoteTime);
         setLastNoteTime(startTime);
         synth.triggerAttackRelease(targetNote, "8n", startTime);
         break;
       case 128: // noteOff
-        // handleTone(note);
         break;
-      // we could easily expand this switch statement to cover other types of commands such as controllers or sysex
+
+      default:
+        break;
     }
   }
 
   function handleMidi() {
     function onMIDISuccess(midiAccess) {
-      console.log("MIDI ready!", midiAccess);
-      setMidiAccess(midiAccess);
       midiAccess.inputs.forEach((entry) => {
         entry.onmidimessage = onMIDIMessage;
       });
@@ -74,7 +72,6 @@ function App() {
   }
 
   function handleTone(note) {
-    console.log(note, typeof note);
     if (typeof note === "string") {
       const targetNote =
         note.length === 4
@@ -82,15 +79,13 @@ function App() {
           : note.charAt(0) +
             note.charAt(1) +
             (parseInt(note.charAt(note.length - 1)) + 1);
-      const now = Tone.now();
-      synths.forEach((synth) => {
-        synth.triggerAttackRelease(targetNote, "8n");
-      });
+      const startTime = Math.max(Tone.now(), lastNoteTime + 0.1);
+      setLastNoteTime(startTime);
+      synth.triggerAttackRelease(targetNote, "8n", startTime);
     }
     if (typeof note === "number") {
       const targetNote =
         midiToNote[Math.floor(note % 12)] + Math.floor(note / 12);
-      const now = Tone.now();
       synths.forEach((synth) => {
         synth.triggerAttackRelease(targetNote, "8n");
       });
