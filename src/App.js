@@ -7,57 +7,31 @@ import Menu from "./components/Menu";
 import "./App.css";
 
 function App() {
-  const filter = new Tone.Filter(1000, "lowpass", -48);
-  const synths = useMemo(() => [
-    new Tone.Synth({
-      oscillator: {
-        type: "sine",
-      },
-      envelope: {
-        attack: 0.05,
-        decay: 0.3,
-        sustain: 0.2,
-        release: 0.1,
-      },
-      volume: -3,
-    })
-      .connect(new Tone.Volume(-3).toDestination())
-      .connect(filter)
-      .toDestination(),
-    new Tone.Synth({
-      oscillator: {
-        type: "fatsine",
-      },
-      detune: 800,
-      envelope: {
-        attack: 0.03,
-        decay: 0.05,
-        sustain: 0.01,
-        release: 0.01,
-      },
-      volume: -1,
-    })
-      .connect(filter)
-      .toDestination(),
-    new Tone.Synth({
-      oscillator: {
-        type: "fatsquare",
-      },
-      detune: 1200,
-      envelope: {
-        attack: 0,
-        decay: 0.1,
-        sustain: 0.05,
-        release: 0.1,
-      },
-      volume: -21,
-    })
-      .connect(filter)
-      .toDestination(),
-  ]);
-  // const [oscillatorConfig, setOscillatorConfig] = useState({});
-  // const [volume, setVolume] = useState(new Tone.Volume(-3).toDestination());
+  const synths = [];
+  const synth = new Tone.PolySynth(Tone.Synth, {
+    oscillator: {
+      type: "custom",
+      partials: [1, 0.4, 1], // Mixing 3 waveforms: sine, triangle, and square
+    },
+    envelope: {
+      attack: 0.01,
+      decay: 0.3,
+      sustain: 0.2,
+      release: 1,
+    },
+    filterEnvelope: {
+      attack: 0.01,
+      decay: 0.1,
+      sustain: 0.5,
+      release: 1,
+      baseFrequency: 200,
+      octaves: 2,
+      exponent: 2,
+    },
+  }).toDestination();
+
   const [midiAccess, setMidiAccess] = useState(null);
+  const [lastNoteTime, setLastNoteTime] = useState(0);
 
   useEffect(() => {
     handleMidi();
@@ -65,13 +39,16 @@ function App() {
   }, []);
 
   function onMIDIMessage(message) {
-    console.log("MIDI", midiAccess, message);
     var command = message.data[0];
     var note = message.data[1];
 
     switch (command) {
       case 144: // noteOn
-        handleTone(note);
+        const targetNote =
+          midiToNote[Math.floor(note % 12)] + Math.floor(note / 12);
+        const startTime = Math.max(Tone.now(), lastNoteTime + 0.1);
+        setLastNoteTime(startTime);
+        synth.triggerAttackRelease(targetNote, "8n", startTime);
         break;
       case 128: // noteOff
         // handleTone(note);
@@ -97,6 +74,7 @@ function App() {
   }
 
   function handleTone(note) {
+    console.log(note, typeof note);
     if (typeof note === "string") {
       const targetNote =
         note.length === 4
@@ -104,6 +82,7 @@ function App() {
           : note.charAt(0) +
             note.charAt(1) +
             (parseInt(note.charAt(note.length - 1)) + 1);
+      const now = Tone.now();
       synths.forEach((synth) => {
         synth.triggerAttackRelease(targetNote, "8n");
       });
@@ -111,7 +90,7 @@ function App() {
     if (typeof note === "number") {
       const targetNote =
         midiToNote[Math.floor(note % 12)] + Math.floor(note / 12);
-      console.log(synths, targetNote);
+      const now = Tone.now();
       synths.forEach((synth) => {
         synth.triggerAttackRelease(targetNote, "8n");
       });
