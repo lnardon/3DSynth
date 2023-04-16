@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
-import { useThree } from "@react-three/fiber";
-import { useLoader } from "@react-three/fiber";
+import { useLoader, useThree } from "@react-three/fiber";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 
 function Scene({ handleKeyboardKeyPress }) {
@@ -9,7 +8,7 @@ function Scene({ handleKeyboardKeyPress }) {
   // const [decay, setDecay] = useState(0.15);
   // const [sustain, setSustain] = useState(0.1);
   // const [release, setRelease] = useState(0.5);
-  const [synthOctave, setSynthOctave] = useState(3);
+  const [synthOctave, setSynthOctave] = useState(2);
   const { raycaster } = useThree();
   const gltf = useLoader(GLTFLoader, "/synth.gltf");
 
@@ -46,7 +45,10 @@ function Scene({ handleKeyboardKeyPress }) {
   useEffect(() => {
     const handleClick = () => {
       const obj = raycaster.intersectObjects(gltf.scene.children);
-      if (notes.includes(obj[0]?.object?.name?.charAt(0)))
+      if (
+        notes.includes(obj[0]?.object?.name?.charAt(0)) ||
+        notes.includes(obj[0]?.object?.name?.charAt(0) + obj[0]?.object?.name?.charAt(1))
+      )
         handleKeyboardKeyPress(obj[0].object.name);
     };
 

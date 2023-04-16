@@ -10,23 +10,23 @@ function App() {
   const [lastNoteTime, setLastNoteTime] = useState(0);
 
   const synth = new Tone.PolySynth(Tone.Synth, {
-    maxPolyphony: 32,
     oscillator: {
       type: "custom",
-      detune: 550,
-      partials: [1, 0.09, 0.23], // Mixing 3 waveforms: sine, triangle, and square
+      detune: 800,
+      volume: 1,
+      partials: [1, 0.09, 0.13], // Mixing 3 waveforms: sine, triangle, and square
     },
     envelope: {
       attack: 0.019,
       decay: 0.05,
       sustain: 0.2,
-      release: 0.3,
+      release: 0.194,
     },
     filterEnvelope: {
-      attack: 0.1,
+      attack: 0.01,
       decay: 0.1,
       sustain: 0.1,
-      release: 0.65,
+      release: 0.25,
       baseFrequency: 400,
       octaves: 1,
       exponent: 1,
