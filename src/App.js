@@ -6,31 +6,33 @@ import Scene from "./components/Scene";
 import Menu from "./components/Menu";
 import "./App.css";
 
+const synth = new Tone.PolySynth(Tone.Synth, {
+  maxPolyphony: 32,
+  oscillator: {
+    type: "custom",
+    // detune: 50,
+    partials: [1, 0.2, 0.5], // Mixing 3 waveforms: sine, triangle, and square
+  },
+  envelope: {
+    attack: 0.019,
+    decay: 0.05,
+    sustain: 0.2,
+    release: 0.3,
+  },
+  filterEnvelope: {
+    attack: 0.1,
+    decay: 0.1,
+    sustain: 0.1,
+    release: 0.65,
+    baseFrequency: 400,
+    octaves: 1,
+    exponent: 1,
+  },
+}).toDestination();
+
 function App() {
+  const [lastNote, setLastNote] = useState("");
   const [lastNoteTime, setLastNoteTime] = useState(0);
-  const synths = [];
-  const synth = new Tone.PolySynth(Tone.Synth, {
-    oscillator: {
-      type: "custom",
-      // detune: 50,
-      partials: [1, 0.2, 0.5], // Mixing 3 waveforms: sine, triangle, and square
-    },
-    envelope: {
-      attack: 0,
-      decay: 0.3,
-      sustain: 0.2,
-      release: 0.4,
-    },
-    filterEnvelope: {
-      attack: 0.1,
-      decay: 0.1,
-      sustain: 0.6,
-      release: 0.65,
-      baseFrequency: 400,
-      octaves: 1,
-      exponent: 1,
-    },
-  }).toDestination();
 
   useEffect(() => {
     handleMidi();
@@ -71,24 +73,26 @@ function App() {
     navigator.requestMIDIAccess().then(onMIDISuccess, onMIDIFailure);
   }
 
-  function handleTone(note) {
-    if (typeof note === "string") {
-      const targetNote =
-        note.length === 4
-          ? note.charAt(0) + (parseInt(note.charAt(note.length - 1)) + 1)
-          : note.charAt(0) +
-            note.charAt(1) +
-            (parseInt(note.charAt(note.length - 1)) + 1);
-      const startTime = Math.max(Tone.now(), lastNoteTime + 0.1);
-      setLastNoteTime(startTime);
-      synth.triggerAttackRelease(targetNote, "8n", startTime);
-    }
-    if (typeof note === "number") {
-      const targetNote =
-        midiToNote[Math.floor(note % 12)] + Math.floor(note / 12);
-      synths.forEach((synth) => {
-        synth.triggerAttackRelease(targetNote, "8n");
-      });
+  function handleTone(note, type) {
+    if (type === "attack") {
+      if (typeof note === "string") {
+        const targetNote =
+          note.length === 4
+            ? note.charAt(0) + (parseInt(note.charAt(note.length - 1)) + 1)
+            : note.charAt(0) +
+              note.charAt(1) +
+              (parseInt(note.charAt(note.length - 1)) + 1);
+        const startTime = Math.max(Tone.now(), lastNoteTime + 0.1);
+        setLastNote(targetNote);
+        synth.triggerAttackRelease(targetNote, "4n", startTime);
+      }
+      if (typeof note === "number") {
+        const targetNote =
+          midiToNote[Math.floor(note % 12)] + Math.floor(note / 12);
+        synth.triggerAttackRelease(targetNote, "2n");
+      }
+    } else {
+      synth.triggerRelease(lastNote);
     }
   }
 
@@ -107,26 +111,26 @@ function App() {
     11: "B",
   };
 
-  // const keyboardInputToNote = {
-  //   KeyA: "C",
-  //   KeyW: "C#",
-  //   KeyS: "D",
-  //   KeyE: "D#",
-  //   KeyD: "E",
-  //   KeyF: "F",
-  //   KeyT: "F#",
-  //   KeyG: "G",
-  //   KeyY: "G#",
-  //   KeyH: "A",
-  //   KeyU: "A#",
-  //   KeyJ: "B",
-  // };
+  const keyboardInputToNote = {
+    KeyA: "C",
+    KeyW: "C#",
+    KeyS: "D",
+    KeyE: "D#",
+    KeyD: "E",
+    KeyF: "F",
+    KeyT: "F#",
+    KeyG: "G",
+    KeyY: "G#",
+    KeyH: "A",
+    KeyU: "A#",
+    KeyJ: "B",
+  };
 
-  // document.addEventListener("keypress", (e) => {
-  //   if (keyboardInputToNote[e.code]) {
-  //     handleTone(`${keyboardInputToNote[e.code]}3`);
-  //   }
-  // });
+  document.addEventListener("keypress", (e) => {
+    if (keyboardInputToNote[e.code]) {
+      handleTone(`${keyboardInputToNote[e.code]}3`);
+    }
+  });
 
   return (
     <div className="App">
