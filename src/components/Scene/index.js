@@ -32,10 +32,6 @@ function Scene({ handleKeyboardKeyPress }) {
       const obj = raycaster.intersectObjects(gltf.scene.children);
       if (notes.includes(obj[0]?.object?.name?.charAt(0)))
         handleKeyboardKeyPress(obj[0].object.name, "attack");
-
-      setTimeout(() => {
-        handleKeyboardKeyPress(obj[0].object.name, "release");
-      }, 10);
     };
 
     document.addEventListener("click", handleClick);

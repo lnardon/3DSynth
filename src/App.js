@@ -134,9 +134,22 @@ function App() {
 
   return (
     <div className="App">
+      <div
+        className="github-btn"
+        onClick={() =>
+          window.open("https://github.com/lnardon/3DSynth", "_blank")
+        }
+      >
+        <img className="github-logo" src="./logo.png" alt="Github Logo" />
+        View on Github
+      </div>
       <Canvas
         camera={{ position: [0, 0.85, 0.95], rotation: [-0.77, 0, 0] }}
-        style={{ position: "absolute", top: 0 }}
+        style={{
+          position: "absolute",
+          top: 0,
+          backgroundColor: "antiquewhite",
+        }}
       >
         <ambientLight />
         <pointLight position={[0, 20, 3]} />
