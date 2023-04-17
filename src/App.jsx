@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Canvas } from "@react-three/fiber";
+import { OrbitControls } from "@react-three/drei";
 import * as Tone from "tone";
 
 import Scene from "./components/Scene";
@@ -8,6 +9,7 @@ import "./App.css";
 
 function App() {
   const [lastNoteTime, setLastNoteTime] = useState(0);
+  const [isOrientationLocked, setIsOrientationLocked] = useState(false);
 
   const synth = new Tone.PolySynth(Tone.Synth, {
     oscillator: {
@@ -113,6 +115,12 @@ function App() {
         <img className="github-logo" src="./logo.png" alt="Github Logo" />
         View on Github
       </div>
+      <div
+        className="orientation"
+        onClick={() => setIsOrientationLocked(!isOrientationLocked)}
+      >
+        <img className="github-logo" src="./success-lock.png" alt="Lock" />
+      </div>
       <Canvas
         camera={{ position: [0, 0.85, 0.95], rotation: [-0.77, 0, 0] }}
         style={{
@@ -121,7 +129,8 @@ function App() {
           backgroundColor: "antiquewhite",
         }}
       >
-        <ambientLight />
+        {!isOrientationLocked ? <OrbitControls /> : null}
+        <ambientLight position={[0, 33, 9]} />
         <pointLight position={[0, 20, 3]} />
         <Scene handleKeyboardKeyPress={handleTone} />
       </Canvas>
