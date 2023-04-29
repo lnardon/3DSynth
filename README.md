@@ -6,6 +6,8 @@ An interactive synth website experience with Three.js and Tone.js. Just click on
   <img src="./demo.PNG">
 </p>
 
+### [Access website here](https://d-synth.web.app/)
+
 ### What was used
 
 - React.js
