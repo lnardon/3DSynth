@@ -6,17 +6,19 @@ import * as Tone from "tone";
 import Scene from "./components/Scene";
 import Menu from "./components/Menu";
 import "./App.css";
+import GithubButton from "./components/GithubButton";
+import ConfigModal from "./components/ConfigModal";
 
 function App() {
   const [lastNoteTime, setLastNoteTime] = useState(0);
-  const [isOrientationLocked, setIsOrientationLocked] = useState(false);
-
-  const synth = new Tone.PolySynth(Tone.Synth, {
+  const [isOrientationLocked, setIsOrientationLocked] = useState(true);
+  const [showConfigModal, setShowConfigModal] = useState(false);
+  const [synthConfig, setSynthConfig] = useState({
     oscillator: {
       type: "custom",
       detune: 800,
-      volume: 1,
-      partials: [1, 0.09, 0.13], // Mixing 3 waveforms: sine, triangle, and square
+      volume: 10,
+      partials: [1, 0.1, 0.8], // Mixing 3 waveforms: sine, triangle, and square
     },
     envelope: {
       attack: 0.019,
@@ -33,12 +35,19 @@ function App() {
       octaves: 1,
       exponent: 1,
     },
-  }).toDestination();
+  });
+
+  const synth = new Tone.PolySynth(Tone.Synth, synthConfig).toDestination();
 
   useEffect(() => {
     handleMidi();
     // eslint-disable-next-line
   }, []);
+
+  useEffect(() => {
+    synth.set(synthConfig);
+    // eslint-disable-next-line
+  }, [synthConfig]);
 
   function onMIDIMessage(message) {
     const command = message.data[0];
@@ -106,23 +115,30 @@ function App() {
 
   return (
     <div className="App">
-      <div
-        className="github-btn"
-        onClick={() =>
-          window.open("https://github.com/lnardon/3DSynth", "_blank")
-        }
-      >
-        <img className="github-logo" src="./logo.png" alt="Github Logo" />
-        View on Github
-      </div>
+      <GithubButton />
       <div
         className="orientation"
         onClick={() => setIsOrientationLocked(!isOrientationLocked)}
       >
         <img className="github-logo" src="./success-lock.png" alt="Lock" />
       </div>
+      <button
+        style={{
+          zIndex: 100,
+          position: "absolute",
+        }}
+        onClick={() => setShowConfigModal(!showConfigModal)}
+      >
+        Config
+      </button>
+      {showConfigModal ? <ConfigModal setSynthConfig={setSynthConfig} /> : null}
       <Canvas
-        camera={{ position: [0, 0.85, 0.95], rotation: [-0.77, 0, 0] }}
+        camera={{
+          position: [0, 0.7, 0.9],
+          rotation: [-0.77, 0, 0],
+          fov: 20,
+          zoom: 0.2,
+        }}
         style={{
           position: "absolute",
           top: 0,
