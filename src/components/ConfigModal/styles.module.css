@@ -14,11 +14,14 @@
   border-radius: 0.5rem;
   gap: 4rem;
   border: 0.75rem solid rgb(255, 142, 14);
+  opacity: 0;
+  animation: slideIn 0.8s cubic-bezier(0.126, 0.88, 0.44, 1) forwards;
 }
 
 .waves {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 1rem;
   margin-bottom: 1rem;
 }
@@ -71,4 +74,15 @@
   background-color: rgba(226, 3, 3, 0.9);
   color: white;
   box-shadow: 0 0 0.25rem rgba(0, 0, 0, 0.1);
+}
+
+@keyframes slideIn {
+  0% {
+    opacity: 0.64;
+    top: 46%;
+  }
+  100% {
+    opacity: 1;
+    top: 50%;
+  }
 }
