@@ -1,7 +1,7 @@
 import { useState } from "react";
 import styles from "./styles.module.css";
 
-function ConfigModal({ setSynthConfig }) {
+function ConfigModal({ setSynthConfig, setShowConfigModal }) {
   const [sine, setSine] = useState(1);
   const [triangle, setTriangle] = useState(0.1);
   const [square, setSquare] = useState(0.8);
@@ -77,7 +77,7 @@ function ConfigModal({ setSynthConfig }) {
                 setSine(e.target.value);
               }}
             />
-            <label>Sine: </label>
+            <label>Sine</label>
           </div>
 
           <div
@@ -97,7 +97,7 @@ function ConfigModal({ setSynthConfig }) {
                 setTriangle(e.target.value);
               }}
             />
-            <label>Triangle: </label>
+            <label>Triangle</label>
           </div>
 
           <div
@@ -117,21 +117,21 @@ function ConfigModal({ setSynthConfig }) {
                 setSquare(e.target.value);
               }}
             />
-            <label>Square: </label>
+            <label>Square</label>
           </div>
-        </div>
-        <div className={styles.field}>
-          <label>Detune: </label>
-          <input
-            type="range"
-            min="0"
-            max="1200"
-            value={detune}
-            onChange={(e) => {
-              handleSave();
-              setDetune(e.target.value);
-            }}
-          />
+          <div className={styles.field}>
+            <input
+              type="range"
+              min="0"
+              max="1200"
+              value={detune}
+              onChange={(e) => {
+                handleSave();
+                setDetune(e.target.value);
+              }}
+            />
+            <label>Detune</label>
+          </div>
         </div>
         <div className={styles.field}>
           <label>Attack: </label>
@@ -302,10 +302,13 @@ function ConfigModal({ setSynthConfig }) {
             }}
           />
         </div>
+        <button
+          className={styles.button}
+          onClick={() => setShowConfigModal((oldVal) => !oldVal)}
+        >
+          Close
+        </button>
       </div>
-      {/* <button className={styles.button} onClick={() => {}}>
-        Close
-      </button> */}
     </div>
   );
 }

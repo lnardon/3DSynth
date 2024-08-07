@@ -128,7 +128,12 @@ function App() {
       >
         Settings
       </button>
-      {showConfigModal ? <ConfigModal setSynthConfig={setSynthConfig} /> : null}
+      {showConfigModal ? (
+        <ConfigModal
+          setSynthConfig={setSynthConfig}
+          setShowConfigModal={setShowConfigModal}
+        />
+      ) : null}
       <Canvas
         camera={{
           position: [0, 0.7, 0.9],
