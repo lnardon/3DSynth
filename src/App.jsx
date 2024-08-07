@@ -123,13 +123,10 @@ function App() {
         <img className="github-logo" src="./success-lock.png" alt="Lock" />
       </div>
       <button
-        style={{
-          zIndex: 100,
-          position: "absolute",
-        }}
+        className="modal-button"
         onClick={() => setShowConfigModal(!showConfigModal)}
       >
-        Config
+        Settings
       </button>
       {showConfigModal ? <ConfigModal setSynthConfig={setSynthConfig} /> : null}
       <Canvas
