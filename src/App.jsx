@@ -8,9 +8,9 @@ import Menu from "./components/Menu";
 import "./App.css";
 import GithubButton from "./components/GithubButton";
 import ConfigModal from "./components/ConfigModal";
+import { midiToNote } from "./utils/notes";
 
 function App() {
-  const [lastNoteTime, setLastNoteTime] = useState(0);
   const [isOrientationLocked, setIsOrientationLocked] = useState(true);
   const [showConfigModal, setShowConfigModal] = useState(false);
   const [synthConfig, setSynthConfig] = useState({
@@ -55,11 +55,7 @@ function App() {
 
     switch (command) {
       case 144: // noteOn
-        const targetNote =
-          midiToNote[Math.floor(note % 12)] + Math.floor(note / 12);
-        const startTime = Math.max(Tone.now(), lastNoteTime);
-        setLastNoteTime(startTime);
-        synth.triggerAttackRelease(targetNote, "8n", startTime);
+        handleTone(note);
         break;
       case 128: // noteOff
         break;
@@ -94,24 +90,12 @@ function App() {
   }
 
   function playTone(note) {
-    const startTime = Math.max(Tone.now(), lastNoteTime + 0.1);
-    synth.triggerAttackRelease(note, "6n", startTime);
+    synth.triggerAttack(note, Tone.now());
   }
 
-  const midiToNote = {
-    0: "C",
-    1: "C#",
-    2: "D",
-    3: "D#",
-    4: "E",
-    5: "F",
-    6: "F#",
-    7: "G",
-    8: "G#",
-    9: "A",
-    10: "A#",
-    11: "B",
-  };
+  function stopTone(note) {
+    synth.triggerRelease(note, Tone.now() + 0.01);
+  }
 
   return (
     <div className="App">
@@ -150,7 +134,10 @@ function App() {
         {!isOrientationLocked ? <OrbitControls /> : null}
         <ambientLight position={[0, 33, 9]} />
         <pointLight position={[0, 20, 3]} />
-        <Scene handleKeyboardKeyPress={handleTone} />
+        <Scene
+          handleKeyboardKeyPress={handleTone}
+          handleKeyboardKeyRelease={stopTone}
+        />
       </Canvas>
       <Menu />
     </div>

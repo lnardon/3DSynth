@@ -1,41 +1,12 @@
 import { useEffect, useState } from "react";
 import { useLoader, useThree } from "@react-three/fiber";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
+import { notes, keyboardInputToNote } from "../../utils/notes";
 
-function Scene({ handleKeyboardKeyPress }) {
+function Scene({ handleKeyboardKeyPress, handleKeyboardKeyRelease }) {
   const [synthOctave, setSynthOctave] = useState(2);
   const { raycaster } = useThree();
   const gltf = useLoader(GLTFLoader, "/synth.gltf");
-
-  const notes = [
-    "A",
-    "A#",
-    "B",
-    "C",
-    "C#",
-    "D",
-    "D#",
-    "E",
-    "F",
-    "F#",
-    "G",
-    "G#",
-  ];
-
-  const keyboardInputToNote = {
-    KeyA: "C",
-    KeyW: "C#",
-    KeyS: "D",
-    KeyE: "D#",
-    KeyD: "E",
-    KeyF: "F",
-    KeyT: "F#",
-    KeyG: "G",
-    KeyY: "G#",
-    KeyH: "A",
-    KeyU: "A#",
-    KeyJ: "B",
-  };
 
   useEffect(() => {
     const handleClick = () => {
@@ -50,6 +21,8 @@ function Scene({ handleKeyboardKeyPress }) {
     };
 
     const handleKeyPressed = (e) => {
+      if (e.repeat) return;
+
       if (e.key === "z") {
         let newOctave = synthOctave >= 1 ? synthOctave - 1 : synthOctave;
         setSynthOctave(newOctave);
@@ -67,12 +40,17 @@ function Scene({ handleKeyboardKeyPress }) {
       }
     };
 
-    document.addEventListener("click", handleClick);
-    document.addEventListener("keypress", handleKeyPressed);
+    const handleKeyRelease = (e) => {
+      handleKeyboardKeyRelease(`${keyboardInputToNote[e.code]}${synthOctave}`);
+    };
 
+    document.addEventListener("click", handleClick);
+    document.addEventListener("keydown", handleKeyPressed);
+    document.addEventListener("keyup", handleKeyRelease);
     return () => {
       document.removeEventListener("click", handleClick);
-      document.removeEventListener("keypress", handleKeyPressed);
+      document.removeEventListener("keydown", handleKeyPressed);
+      document.removeEventListener("keyup", handleKeyRelease);
     };
   });
 
