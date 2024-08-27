@@ -94,7 +94,7 @@ function App() {
   }
 
   function stopTone(note) {
-    synth.triggerRelease(note, Tone.now() + 0.01);
+    synth.triggerRelease(note, Tone.now());
   }
 
   return (
@@ -119,16 +119,12 @@ function App() {
         />
       ) : null}
       <Canvas
+        className="canvas"
         camera={{
           position: [0, 0.7, 0.9],
           rotation: [-0.77, 0, 0],
           fov: 20,
           zoom: 0.2,
-        }}
-        style={{
-          position: "absolute",
-          top: 0,
-          backgroundColor: "antiquewhite",
         }}
       >
         {!isOrientationLocked ? <OrbitControls /> : null}
